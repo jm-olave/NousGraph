@@ -1,0 +1,14 @@
+  3%|█████▍                                                                                                                                                                                       | 14/492 [00:10<05:14,  1.52it/s]Traceback (most recent call last):
+  File "/mnt/c/Users/diego/OneDrive/Documentos/Data science projects/health_project/src/main.py", line 134, in <module>
+    trainer, metrics = train_optimized_medical_classifier(csv_file)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/diego/OneDrive/Documentos/Data science projects/health_project/src/main.py", line 95, in train_optimized_medical_classifier
+    train_result = trainer.train()
+                   ^^^^^^^^^^^^^^^
+  File "/home/diegopy/miniconda3/envs/healthpro/lib/python3.11/site-packages/transformers/trainer.py", line 2238, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/diegopy/miniconda3/envs/healthpro/lib/python3.11/site-packages/transformers/trainer.py", line 2587, in _inner_training_loop
+    and (torch.isnan(tr_loss_step) or torch.isinf(tr_loss_step))
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
