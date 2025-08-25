@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./ui:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    networks:
+      - medical-classifier
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+      - uploads:/app/uploads
+    environment:
+      - DATABASE_URL=postgresql://classifier:password@db:5432/medical_classifier
+      - UPLOAD_DIR=/app/uploads
+    depends_on:
+      - db
+    networks:
+      - medical-classifier
+
+  # PostgreSQL Database
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=medical_classifier
+      - POSTGRES_USER=classifier
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - medical-classifier
+
+  # Model Service (Optional - for actual ML inference)
+  # model:
+  #   build:
+  #     context: ./model
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - model_cache:/app/cache
+  #   networks:
+  #     - medical-classifier
+
+volumes:
+  postgres_data:
+  uploads:
+  # model_cache:
+
+networks:
+  medical-classifier:
+    driver: bridge

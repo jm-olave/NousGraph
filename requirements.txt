@@ -7,13 +7,13 @@ numpy>=1.20.0
 matplotlib>=3.4.0
 seaborn>=0.11.0
 wordcloud>=1.8.1
-spacy>=3.0.0
 scikit-learn>=1.0.0
 nltk>=3.6.0
 wordcloud>=1.8.1
-spacy>=3.0.0
 scikit-learn>=1.0.0
 nltk>=3.6.0
+torch>=1.10.0
+transformers>=4.0.0
 
 # Machine learning and preprocessing
 scikit-learn>=1.0.0
@@ -28,3 +28,4 @@ plotly>=5.0.0     # For interactive plots (optional)
 
 # Development and utility
 ipython>=7.0.0    # Enhanced interactive Python
+
