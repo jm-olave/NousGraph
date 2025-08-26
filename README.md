@@ -1,346 +1,254 @@
 # Medical Paper Classification System
 
-A beautiful, containerized web application for classifying medical papers using PubMedBERT. Judges can upload CSV files containing medical paper data and receive instant classification results across four categories: neurological, cardiovascular, hepatorenal, and oncological.
+Containerized web application for classifying medical papers using a fine-tuned PubMedBERT model. Upload CSVs and get per-paper probabilities across four categories: neurological, cardiovascular, hepatorenal, and oncological.
 
-## 🏗️ Architecture Overview
+Key updates:
+- Complete training pipeline is documented and implemented in [python.def train_optimized_medical_classifier()](last_v2.ipynb:982) within [last_v2.ipynb](last_v2.ipynb).
+- EDA and feature engineering are documented in [markdown.## Step 2: Exploratory Data Analysis (EDA)](DataAnalysis.ipynb:63) within [DataAnalysis.ipynb](DataAnalysis.ipynb).
+- Initial UI design prototype was explored with v0: https://v0-medical-paper-classification.vercel.app/; the fully functional UI runs in the Dockerized Next.js app in this repository.
 
-This system implements a microservices architecture with three main components:
+## Architecture Overview
 
-### System Architecture
+This project uses a multi-service architecture orchestrated with Docker Compose:
 
 ```mermaid
 graph TB
-    A[Next.js Frontend] --> B[FastAPI Backend]
-    B --> C[Model Service]
-    B --> D[Database]
+    A[Next.js Frontend (ui)] -->|HTTP| B[FastAPI API (api)]
+    B -->|HTTP JSON| C[Model Service (model)]
+    B -->|SQL| D[(PostgreSQL)]
+    A -->|CSV upload| B
+    B -->|Results JSON| A
 
-    subgraph "Docker Containers"
+    subgraph "Docker Network"
         A
         B
         C
         D
     end
-
-    E[CSV Upload] --> A
-    A --> F[Results Visualization]
-    B --> G[Classification Pipeline]
 ```
 
-### Components
+### Components (as implemented)
 
-#### 1. **Frontend (Next.js)**
-- **Location:** `/ui`
-- **Technology:** Next.js 14, React, TypeScript, Tailwind CSS
-- **Purpose:** Beautiful user interface for judges to upload CSV files and view results
-- **Features:**
-  - Drag-and-drop CSV upload
-  - Real-time progress tracking
-  - Interactive results visualization
-  - Export functionality
-  - Responsive design
+- Frontend (Next.js)
+  - Location: `/ui`
+  - Tech: Next.js 14 (app router), React, TypeScript, TailwindCSS
+  - Notable files: [typescript.export default function Page()](ui/app/page.tsx), [typescript.export function ClientBody()](ui/app/ClientBody.tsx), [typescript.export default function MedicalEdaDashboard()](ui/components/medical-eda-dashboard.tsx), and dashboard components under `/ui/components/dashboard/*`.
+  - Role: CSV upload, progress, and results visualization.
 
-#### 2. **Backend API (FastAPI)**
-- **Location:** `/api`
-- **Technology:** FastAPI, Python, Uvicorn
-- **Purpose:** Handle file uploads, coordinate model inference, manage results
-- **Endpoints:**
-  - `POST /upload` - Handle CSV file uploads
-  - `GET /results/{job_id}` - Get classification results
-  - `GET /health` - Health check
-  - `GET /status/{job_id}` - Check processing status
+- Backend API (FastAPI)
+  - Location: `/api`
+  - Entry: [python.app = FastAPI(...)](api/main.py:22)
+  - Endpoints: [python.@app.post("/upload")](api/main.py:151), [python.@app.get("/status/{job_id}")](api/main.py:177), [python.@app.get("/results/{job_id}")](api/main.py:189), [python.@app.post("/classify-text")](api/main.py:144), [python.@app.get("/")](api/main.py:140)
+  - Coordinates CSV processing and calls the model service in batches via [python.async def call_model_service()](api/main.py:70)
 
-#### 3. **Model Service**
-- **Location:** `/model`
-- **Technology:** PyTorch, Transformers, PubMedBERT
-- **Purpose:** Perform medical paper classification
-- **Model:** `microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext`
-- **Categories:** neurological, cardiovascular, hepatorenal, oncological
+- Model Service (FastAPI)
+  - Location: `/model`
+  - Entry: [python.app = FastAPI(...)](model/model_service.py:17)
+  - Endpoint: [python.@app.post("/classify")](model/model_service.py:62)
+  - Loads a fine-tuned PubMedBERT model from `./my_medical_model` inside the container (see setup below).
 
-#### 4. **Database**
-- **Technology:** PostgreSQL
-- **Purpose:** Store classification results and job metadata
-- **Tables:** jobs, results, classifications
+- Database (PostgreSQL)
+  - Provided by `docker-compose.yml`. Current API implementation stores job state in-memory for the demo flow; a DB connection string is wired for future persistence.
 
-## 🛠️ Technology Stack
-
-### Frontend
-- **Framework:** Next.js 14
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Charts:** Chart.js/Recharts
-- **File Upload:** React Dropzone
-
-### Backend
-- **Framework:** FastAPI
-- **Language:** Python 3.9+
-- **ML Framework:** PyTorch
-- **NLP:** Transformers library
-- **Database:** SQLAlchemy + PostgreSQL
-
-### Infrastructure
-- **Containerization:** Docker
-- **Orchestration:** Docker Compose
-- **Web Server:** Nginx (for production)
-
-## 📊 Data Flow
-
-1. **File Upload:** Judge uploads CSV file via Next.js frontend
-2. **Validation:** FastAPI validates file format and size
-3. **Processing:** Backend extracts text from CSV (title + abstract)
-4. **Classification:** Model service processes text and returns predictions
-5. **Storage:** Results stored in PostgreSQL database
-6. **Visualization:** Frontend displays results with charts and export options
-
-## 📁 Project Structure
+## Project Structure (actual)
 
 ```
-medical-classifier/
-├── api/                    # FastAPI backend
+.
+├── api/
+│   ├── Dockerfile
+│   ├── main.py
+│   └── requirements.txt
+├── model/
+│   ├── Dockerfile
+│   ├── model_service.py
+│   └── requirements.txt
+├── ui/
+│   ├── Dockerfile
 │   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py         # FastAPI application
-│   │   ├── models.py       # Database models
-│   │   ├── routes/         # API endpoints
-│   │   └── services/       # Business logic
-│   ├── requirements.txt
-│   └── Dockerfile
-├── ui/                     # Next.js frontend
-│   ├── components/         # React components
-│   ├── pages/             # Next.js pages
-│   ├── public/            # Static assets
-│   ├── styles/            # CSS styles
-│   └── Dockerfile
-├── model/                  # ML model service
-│   ├── model.py           # PubMedBERT model
-│   ├── preprocess.py      # Text preprocessing
-│   ├── requirements.txt
-│   └── Dockerfile
-├── docker-compose.yml     # Docker orchestration
-├── nginx.conf             # Production web server
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── eda/page.tsx
+│   ├── components/
+│   │   ├── navigation.tsx
+│   │   ├── medical-eda-dashboard.tsx
+│   │   └── dashboard/{file-upload,progress-tracker,results-panel}.tsx
+│   ├── components/ui/*.tsx
+│   ├── next.config.js
+│   ├── tailwind.config.js
+│   └── postcss.config.js
+├── docker-compose.yml
+├── last_v2.ipynb                # Full model training pipeline
+├── DataAnalysis.ipynb           # Full EDA
+├── requirements.txt
 └── README.md
 ```
 
-## 🚀 Quick Start
+Notes:
+- The earlier README referenced nested API modules (app/, models.py, routes/). The current code uses a single-file FastAPI entry at `/api/main.py`.
+- The model service expects the trained model artifacts to be available at runtime inside `/model/my_medical_model` (see Setup).
 
-### Prerequisites
-- Docker and Docker Compose
-- 8GB+ RAM (for model inference)
-- Modern web browser
+## Notebooks
 
-### Development Setup
+- Training pipeline: [python.def train_optimized_medical_classifier()](last_v2.ipynb:982) inside [last_v2.ipynb](last_v2.ipynb) implements:
+  - Multi-label classification with PubMedBERT
+  - Data augmentation tailored to multi-organ co-occurrence
+  - Class weighting via [python.def calculate_class_weights()](last_v2.ipynb:254)
+  - Custom trainer with BCE-with-logits weighted loss via [python.class ImprovedTrainer(Trainer)](last_v2.ipynb:211)
+  - Evaluation metrics via [python.def compute_multilabel_metrics()](last_v2.ipynb:98)
+  - Saves model to `./pubmedbert-medical-v6`
+  - Provides a packaging snippet to export minimal artifacts to `my_medical_model.zip` for deployment
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd medical-classifier
-   ```
+- EDA: [markdown.## Step 2: Exploratory Data Analysis (EDA)](DataAnalysis.ipynb:63) inside [DataAnalysis.ipynb](DataAnalysis.ipynb) covers:
+  - Dataset inspection, target distribution, imbalance analysis
+  - Visualizations (bar, pie, word clouds)
+  - Recommendations for modeling and handling imbalance
+  - Basic feature engineering preparation
 
-2. **Start all services:**
-   ```bash
-   docker-compose up --build
-   ```
+## Prototype vs. Production UI
 
-3. **Access the application:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
+- Prototype: v0-based first impression (design exploration) at https://v0-medical-paper-classification.vercel.app/
+- Production: The complete, functional UI is the Dockerized Next.js app under `/ui`. All project functionality runs within the Docker containers defined in `docker-compose.yml`.
 
-### Production Deployment
+## CSV Format
 
-1. **Build production images:**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up --build
-   ```
+The system expects CSV files with at least:
+- Columns: title, abstract
+- Optional: group (for reference/labeling)
 
-2. **Access via Nginx:**
-   - Application: http://localhost
-
-## 📝 CSV Format Requirements
-
-The system expects CSV files with the following columns:
+Delimiters are auto-detected during API parsing. Example:
 
 ```csv
 title,abstract,group
-"Paper Title Here","Abstract text content...","neurological|cardiovascular"
+"Paper Title","Abstract text...","neurological|cardiovascular"
 ```
 
-### Requirements:
-- **Format:** CSV with semicolon (;) or comma (,) delimiter
-- **Encoding:** UTF-8
-- **Columns:** title, abstract, group (group is optional)
-- **Max Size:** 50MB
-- **Text Length:** Abstracts up to 512 tokens (auto-truncated)
+Limits:
+- Max upload size: 50MB
+- Texts are tokenized to max_length=512 in the model service
 
-## 🎯 Key Features
+## End-to-end Docker Setup
 
-### For Judges
-- **Beautiful Interface:** Modern, responsive design
-- **Easy Upload:** Drag-and-drop CSV file upload
-- **Real-time Progress:** Live updates during processing
-- **Rich Visualization:** Charts, tables, and export options
-- **Multi-format Export:** CSV, JSON, PDF results
+Prerequisites:
+- Docker Desktop with Docker Compose
+- 8GB+ RAM recommended
+- Internet access if building images that fetch dependencies
 
-### For Developers
-- **Microservices:** Independent, scalable components
-- **API Documentation:** Auto-generated OpenAPI docs
-- **Error Handling:** Comprehensive error management
-- **Logging:** Structured logging across services
-- **Health Checks:** Service monitoring endpoints
+1) Prepare environment files (optional but recommended)
+- Frontend (/ui/.env.local):
+  ```
+  NEXT_PUBLIC_API_URL=http://localhost:8000
+  NEXT_PUBLIC_MAX_FILE_SIZE=52428800
+  ```
+- Backend (/api/.env) or docker-compose environment section:
+  ```
+  DATABASE_URL=postgresql://classifier:password@db:5432/medical_classifier
+  MODEL_URL=http://model:8080
+  UPLOAD_DIR=/app/uploads
+  ```
+  Important: MODEL_URL must be http://model:8080 when using Docker so the API can reach the model service on the Docker network (default fallback http://localhost:8080 only works when running model locally on host, not in Compose).
+- Model Service: No env required if you provide the model at ./model/my_medical_model. It loads from that path at startup.
 
-## 🔧 Configuration
+2) Provide the trained model artifacts
+The model service looks for artifacts under ./model/my_medical_model (inside the container, relative to /app). Place the minimal HuggingFace-compatible files there:
+- config.json
+- model.safetensors (or pytorch_model.bin)
+- tokenizer.json
+- tokenizer_config.json
+- vocab.txt (for uncased BERT)
+- special_tokens_map.json
 
-### Environment Variables
+Two ways to provide them:
+- a) Copy the exported model dir from training: If you trained with [python.def train_optimized_medical_classifier()](last_v2.ipynb:982), it saved to ./pubmedbert-medical-v6. Copy its contents into ./model/my_medical_model.
+- b) Use the provided packaging code in [python.files_needed](last_v2.ipynb:1424) to make my_medical_model.zip, extract into ./model/my_medical_model.
 
-#### Frontend (.env.local)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_MAX_FILE_SIZE=52428800
+Resulting tree (host):
+```
+model/
+  my_medical_model/
+    config.json
+    model.safetensors
+    tokenizer.json
+    tokenizer_config.json
+    vocab.txt
+    special_tokens_map.json
 ```
 
-#### Backend (.env)
-```env
-DATABASE_URL=postgresql://user:password@db:5432/medical_classifier
-MODEL_URL=http://model:8080
-MAX_WORKERS=4
+3) Build and run with Docker Compose
+From repo root:
+```
+docker-compose up --build
 ```
 
-#### Model Service (.env)
-```env
-MODEL_NAME=microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext
-BATCH_SIZE=8
-MAX_LENGTH=512
-```
+This will start:
+- Frontend at http://localhost:3000
+- Backend at http://localhost:8000 (docs at /docs)
+- Model at http://localhost:8080 (health at /health)
+- PostgreSQL at localhost:5432 (db named medical_classifier)
 
-## 🐳 Docker Configuration
+4) Verify services
+- Model health: GET http://localhost:8080/health
+  - Should return model_status: "loaded". If "not loaded", re-check step 2 path and files.
+- API root: GET http://localhost:8000/
+- API docs: http://localhost:8000/docs
+- Frontend: http://localhost:3000
 
-### Development (docker-compose.yml)
-```yaml
-version: '3.8'
-services:
-  frontend:
-    build: ./ui
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./ui:/app
-      - /app/node_modules
+5) Use the app
+- Open the frontend
+- Upload a CSV with columns title, abstract
+- Track progress and view results
 
-  backend:
-    build: ./api
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./api:/app
-    depends_on:
-      - db
-      - model
+6) Optional: Persist volumes
+docker-compose.yml defines named volumes:
+- postgres_data for DB state
+- uploads for API upload directory
+- model_cache for model cache (if used by the model container)
 
-  model:
-    build: ./model
-    ports:
-      - "8080:8080"
+## Configuration Reference
 
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: medical_classifier
-      POSTGRES_USER: classifier
-      POSTGRES_PASSWORD: password
-```
+- Frontend
+  - Port: 3000
+  - Dockerfile builds the Next app: [docker.Dockerfile](ui/Dockerfile:1)
+- Backend
+  - Env: MODEL_URL must point to model service (http://model:8080)
+  - Upload dir: /app/uploads (bind-mounted volume)
+  - Batch size in processing: 32 in [python.for i in range(0, len(texts_to_classify), batch_size)](api/main.py:101)
+- Model Service
+  - Loads from ./my_medical_model at startup: [python.MODEL_PATH = "./my_medical_model"](model/model_service.py:14)
+  - Categories: [python.CATEGORIES = ['neurological','cardiovascular','hepatorenal','oncological']](model/model_service.py:60)
 
-## 📊 API Documentation
+## API Quick Reference
 
-### Upload Endpoint
-```http
-POST /upload
-Content-Type: multipart/form-data
+- Upload CSV
+  - [python.@app.post("/upload")](api/main.py:151)
+  - Response includes job_id
+- Check status
+  - [python.@app.get("/status/{job_id}")](api/main.py:177)
+- Fetch results
+  - [python.@app.get("/results/{job_id}")](api/main.py:189)
+- Single text classify
+  - [python.@app.post("/classify-text")](api/main.py:144)
 
-Form Data:
-- file: CSV file
-- options: JSON string with processing options
-```
+## Troubleshooting
 
-### Results Endpoint
-```http
-GET /results/{job_id}
-```
+- Backend cannot reach model service in Docker
+  - Symptom: 503 from API, logs show model service unavailable.
+  - Likely cause: MODEL_URL not set to http://model:8080.
+  - Fix: Set MODEL_URL=http://model:8080 in backend environment (Compose or .env) and restart.
 
-Response:
-```json
-{
-  "job_id": "uuid",
-  "status": "completed",
-  "results": [
-    {
-      "title": "Paper Title",
-      "abstract": "Abstract...",
-      "predictions": [
-        {"category": "neurological", "confidence": 0.85},
-        {"category": "cardiovascular", "confidence": 0.72}
-      ]
-    }
-  ],
-  "summary": {
-    "total_papers": 100,
-    "categories": {
-      "neurological": 25,
-      "cardiovascular": 30,
-      "hepatorenal": 20,
-      "oncological": 25
-    }
-  }
-}
-```
+- Model service shows "model not loaded"
+  - Ensure ./model/my_medical_model contains all required files listed above.
+  - File names must match HuggingFace expectations.
+  - Rebuild container if files changed.
 
-## 🔍 Model Details
+- CSV parsing errors
+  - Ensure columns title and abstract exist (API enforces this in [python.if 'title' not in df.columns or 'abstract' not in df.columns:](api/main.py:92)).
+  - The API uses pandas engine='python' with sep=None for auto delimiter detection.
 
-### PubMedBERT Configuration
-- **Model:** `microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext`
-- **Max Sequence Length:** 512 tokens
-- **Batch Size:** 8 (configurable)
-- **Classification:** Multi-label with 4 categories
-- **Threshold:** 0.5 for binary classification
+## License
 
-### Performance
-- **Throughput:** ~50 papers/minute
-- **Accuracy:** 85-90% (based on training data)
-- **Memory Usage:** ~4GB VRAM required
+MIT
 
-## 🚨 Error Handling
+## Acknowledgments
 
-The system includes comprehensive error handling for:
-
-- **File Upload Errors:** Invalid format, size limits, encoding issues
-- **Processing Errors:** Model failures, database connection issues
-- **Network Errors:** Service communication failures
-- **Validation Errors:** Missing required fields, malformed data
-
-## 📈 Monitoring
-
-- **Health Endpoints:** `/health` for each service
-- **Metrics:** Processing time, success rates, error rates
-- **Logs:** Structured logging with correlation IDs
-- **Database:** Job status tracking and audit logs
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Check the API documentation at `/docs`
-- Review the logs for error details
-
----
-
-**Built with ❤️ for medical research and classification**
+- Initial UI design exploration via v0 prototype: https://v0-medical-paper-classification.vercel.app/
+- Based on PubMedBERT: microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext

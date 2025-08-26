@@ -6,11 +6,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    volumes:
-      - ./ui:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
     depends_on:
       - backend
     networks:
@@ -29,6 +24,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://classifier:password@db:5432/medical_classifier
       - UPLOAD_DIR=/app/uploads
+      - MODEL_URL=http://model:8080
     depends_on:
       - db
     networks:

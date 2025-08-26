@@ -5,6 +5,7 @@ import logging
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import os
+import time
 
 # --- Configuration ---
 logging.basicConfig(level=logging.INFO)
@@ -63,11 +64,20 @@ CATEGORIES = ['neurological', 'cardiovascular', 'hepatorenal', 'oncological']
 async def classify_texts(request: ClassificationRequest):
     """Classifies a batch of medical texts."""
     if not model or not tokenizer:
+        logger.error("Classification requested but model/tokenizer not loaded")
         raise HTTPException(
-            status_code=503, 
+            status_code=503,
             detail="Model is not loaded. Please check service logs for errors."
         )
 
+    batch_size = len(request.texts)
+    first_preview = ""
+    if batch_size:
+        first = request.texts[0]
+        first_preview = (first[:120] + "...") if len(first) > 120 else first
+    logger.info(f"/classify received: batch={batch_size} max_length={request.max_length} first_preview={first_preview!r}")
+
+    start_ts = time.perf_counter()
     try:
         inputs = tokenizer(
             request.texts,
@@ -81,18 +91,22 @@ async def classify_texts(request: ClassificationRequest):
             outputs = model(**inputs)
             probabilities = torch.sigmoid(outputs.logits)
 
-        all_predictions = []
-        for i in range(len(request.texts)):
+        duration_ms = int((time.perf_counter() - start_ts) * 1000)
+        logger.info(f"/classify inference completed in {duration_ms} ms")
+
+        all_predictions: List[List[Prediction]] = []
+        for i in range(batch_size):
             text_predictions = [
                 Prediction(category=category, probability=round(probabilities[i][j].item(), 4))
                 for j, category in enumerate(CATEGORIES)
             ]
             all_predictions.append(text_predictions)
 
+        logger.info(f"/classify returning predictions for batch={batch_size}")
         return ClassificationResponse(predictions=all_predictions)
 
     except Exception as e:
-        logger.error(f"An error occurred during classification: {e}")
+        logger.exception("An error occurred during classification")
         raise HTTPException(status_code=500, detail=f"Classification failed: {e}")
 
 @app.get("/health")

@@ -141,12 +141,30 @@ async def process_csv_background(job_id: str, file_path: str):
 async def root():
     return {"message": "Medical Paper Classification API is running."}
 
+@app.get("/health")
+async def health():
+    """Health endpoint for Docker healthcheck."""
+    return {
+        "status": "ok",
+        "service": "backend",
+        "time": datetime.utcnow().isoformat()
+    }
+
 @app.post("/classify-text", response_model=List[Prediction])
 async def classify_single_text(request: SingleTextRequest):
     """Classifies a single abstract text and returns the result immediately."""
-    logger.info("Received request for single text classification.")
-    predictions = await call_model_service([request.text])
-    return predictions[0]
+    text = request.text or ""
+    text_preview = (text[:120] + "...") if len(text) > 120 else text
+    logger.info(f"/classify-text received: length={len(text)} preview={text_preview!r}")
+    start_ts = datetime.utcnow()
+    try:
+        predictions = await call_model_service([text])
+        duration_ms = int((datetime.utcnow() - start_ts).total_seconds() * 1000)
+        logger.info(f"/classify-text completed in {duration_ms} ms with {len(predictions[0])} predictions")
+        return predictions[0]
+    except Exception as e:
+        logger.exception(f"/classify-text failed: {e}")
+        raise
 
 @app.post("/upload")
 async def upload_csv(background_tasks: BackgroundTasks, file: UploadFile = File(...)):

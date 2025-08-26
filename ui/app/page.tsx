@@ -5,6 +5,7 @@ import { Navigation } from '@/components/navigation';
 import { FileUpload } from '@/components/dashboard/file-upload';
 import { ProgressTracker } from '@/components/dashboard/progress-tracker';
 import { ResultsPanel } from '@/components/dashboard/results-panel';
+import { TextClassifier } from '@/components/dashboard/text-classifier';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Dashboard() {
@@ -67,6 +68,9 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Single Abstract Classification */}
+          <TextClassifier />
 
           {/* Upload Section */}
           <FileUpload
