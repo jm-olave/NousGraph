@@ -11,8 +11,10 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - medical-classifier
 
@@ -29,10 +31,20 @@ services:
     environment:
       - DATABASE_URL=postgresql://classifier:password@db:5432/medical_classifier
       - UPLOAD_DIR=/app/uploads
+      - MODEL_URL=http://model:8080
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      model:
+        condition: service_healthy
     networks:
       - medical-classifier
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # PostgreSQL Database
   db:
@@ -47,8 +59,14 @@ services:
       - "5432:5432"
     networks:
       - medical-classifier
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U classifier -d medical_classifier"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
-  # Model Service (Optional - for actual ML inference)
+  # Model Service
   model:
     build:
       context: ./model
@@ -57,8 +75,18 @@ services:
       - "8080:8080"
     volumes:
       - model_cache:/app/cache
+      # Montar directorio del modelo si existe
+      - ./model/my_medical_model:/app/my_medical_model:ro
+    environment:
+      - MODEL_PATH=/app/my_medical_model
     networks:
       - medical-classifier
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 120s
 
 volumes:
   postgres_data:
