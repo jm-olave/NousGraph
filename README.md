@@ -14,47 +14,47 @@ This project uses a microservices architecture orchestrated with Docker Compose,
 ```mermaid
 graph TB
     subgraph "Client Layer"
-        User[👤 User] 
+        User[👤 User]
         Browser[🌐 Web Browser]
     end
     
-    subgraph "Docker Compose Network: medical-classifier"
-        subgraph "Frontend Service (Port 3000)"
-            UI[📱 Next.js UI<br/>TypeScript + React<br/>TailwindCSS]
-            Upload[📤 File Upload Component]
+    subgraph "Docker Network: medical-classifier"
+        subgraph "Frontend Service - Port 3000"
+            UI[📱 Next.js UI]
+            Upload[📤 File Upload]
             Progress[📊 Progress Tracker]
             Results[📋 Results Display]
         end
         
-        subgraph "Backend Service (Port 8000)"
-            API[🚀 FastAPI Backend<br/>Job Management<br/>CSV Processing]
-            Queue[⏳ Background Tasks<br/>Job Queue (In-Memory)]
-            FileStore[📁 File Storage<br/>/uploads]
+        subgraph "Backend Service - Port 8000"
+            API[🚀 FastAPI Backend]
+            Queue[⏳ Background Tasks]
+            FileStore[📁 File Storage]
         end
         
-        subgraph "Model Service (Port 8080)"
-            Model[🧠 PubMedBERT Model<br/>Fine-tuned Classification<br/>4 Medical Categories]
-            Tokenizer[🔤 BERT Tokenizer<br/>Text Preprocessing]
+        subgraph "Model Service - Port 8080"
+            Model[🧠 PubMedBERT Model]
+            Tokenizer[🔤 BERT Tokenizer]
         end
         
-        subgraph "Database Service (Port 5432)"
-            DB[(🗄️ PostgreSQL<br/>Job Persistence<br/>(Optional))]
+        subgraph "Database Service - Port 5432"
+            DB[(🗄️ PostgreSQL)]
         end
     end
     
     User --> Browser
-    Browser --|"1. Upload CSV"| Upload
-    Upload --|"HTTP POST /upload"| API
-    API --|"2. Store file"| FileStore
-    API --|"3. Create job"| Queue
-    Queue --|"4. Process in batches"| API
-    API --|"5. HTTP POST /classify"| Model
-    Model --|"6. Predictions"| API
-    API --|"7. Results"| Results
-    Results --|"8. Display"| Browser
+    Browser -->|"1. Upload CSV"| Upload
+    Upload -->|"HTTP POST /upload"| API
+    API -->|"2. Store file"| FileStore
+    API -->|"3. Create job"| Queue
+    Queue -->|"4. Process batches"| API
+    API -->|"5. POST /classify"| Model
+    Model -->|"6. Predictions"| API
+    API -->|"7. Results"| Results
+    Results -->|"8. Display"| Browser
     
     UI -.->|"Status polling"| API
-    API -.->|"Optional persistence"| DB
+    API -.->|"Optional"| DB
     
     classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     classDef backend fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
