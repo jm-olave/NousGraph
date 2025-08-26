@@ -6,7 +6,23 @@ Key updates:
 - Complete training pipeline is documented and implemented in [python.def train_optimized_medical_classifier()](last_v2.ipynb:982) within [last_v2.ipynb](last_v2.ipynb).
 - EDA and feature engineering are documented in [markdown.## Step 2: Exploratory Data Analysis (EDA)](DataAnalysis.ipynb:63) within [DataAnalysis.ipynb](DataAnalysis.ipynb).
 - Initial UI design prototype was explored with v0: https://v0-medical-paper-classification.vercel.app/; the fully functional UI runs in the Dockerized Next.js app in this repository.
+## 🎥 Demo Video
 
+Watch the complete system demonstration showcasing the Medical Paper Classification System in action:
+
+[![Medical Paper Classification Demo](https://img.youtube.com/vi/Monf_OodB80/maxresdefault.jpg)](https://youtu.be/Monf_OodB80)
+
+**🎬 [View Demo Video](https://youtu.be/Monf_OodB80)**
+
+The demo includes:
+- **Step-by-step setup process** with Docker Compose
+- **Live CSV upload and classification** workflow
+- **Results interpretation and analysis** features
+- **Performance benchmarks** and accuracy metrics
+- **Real-time progress tracking** demonstration
+- **Single text classification** functionality
+
+_Duration: Complete walkthrough of the medical paper classification system from setup to results analysis._
 ## 🏗️ System Architecture
 
 This project uses a microservices architecture orchestrated with Docker Compose, featuring four main components working together to provide seamless medical paper classification:
@@ -372,23 +388,7 @@ docker stats
 # Or reduce batch size in api/main.py (line 99)
 ```
 
-## 🎥 Demo Video
 
-Watch the complete system demonstration showcasing the Medical Paper Classification System in action:
-
-[![Medical Paper Classification Demo](https://img.youtube.com/vi/Monf_OodB80/maxresdefault.jpg)](https://youtu.be/Monf_OodB80)
-
-**🎬 [View Demo Video](https://youtu.be/Monf_OodB80)**
-
-The demo includes:
-- **Step-by-step setup process** with Docker Compose
-- **Live CSV upload and classification** workflow
-- **Results interpretation and analysis** features
-- **Performance benchmarks** and accuracy metrics
-- **Real-time progress tracking** demonstration
-- **Single text classification** functionality
-
-_Duration: Complete walkthrough of the medical paper classification system from setup to results analysis._
 
 ## 📊 Performance Metrics
 
