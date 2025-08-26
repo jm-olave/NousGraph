@@ -127,6 +127,7 @@ model_*.pkl
 results/
 outputs/
 logs/
+*.safetensors
 
 # Analysis outputs
 *.png

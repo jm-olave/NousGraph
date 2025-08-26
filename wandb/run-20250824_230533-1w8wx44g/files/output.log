@@ -1,0 +1,20 @@
+  0%|                                                                                                                                                                                                      | 0/920 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/mnt/c/Users/diego/OneDrive/Documentos/Data science projects/health_project/main.py", line 180, in <module>
+    trainer, metrics = train_medical_classifier(csv_file)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/diego/OneDrive/Documentos/Data science projects/health_project/src/utils/memory_monitor.py", line 100, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/diego/OneDrive/Documentos/Data science projects/health_project/main.py", line 98, in train_medical_classifier
+    trainer, final_metrics = train_model(trainer, config)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/diego/OneDrive/Documentos/Data science projects/health_project/src/training/trainer.py", line 82, in train_model
+    train_result = trainer.train()
+                   ^^^^^^^^^^^^^^^
+  File "/home/diegopy/miniconda3/envs/healthpro/lib/python3.11/site-packages/transformers/trainer.py", line 2238, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/diegopy/miniconda3/envs/healthpro/lib/python3.11/site-packages/transformers/trainer.py", line 2582, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: ImprovedTrainer.training_step() takes 3 positional arguments but 4 were given
