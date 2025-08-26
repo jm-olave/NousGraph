@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Next.js Frontend
   frontend:
@@ -51,21 +49,21 @@ services:
       - medical-classifier
 
   # Model Service (Optional - for actual ML inference)
-  # model:
-  #   build:
-  #     context: ./model
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - model_cache:/app/cache
-  #   networks:
-  #     - medical-classifier
+  model:
+    build:
+      context: ./model
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - model_cache:/app/cache
+    networks:
+      - medical-classifier
 
 volumes:
   postgres_data:
   uploads:
-  # model_cache:
+  model_cache:
 
 networks:
   medical-classifier:

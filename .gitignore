@@ -242,3 +242,6 @@ logs
 .Trashes
 ehthumbs.db
 Thumbs.db
+.zip
+my_medical_model/
+my_medical_model.zip

@@ -9,6 +9,13 @@ module.exports = {
   theme: {
   	extend: {
   		colors: {
+            nous: {
+                cream: 'hsl(52, 42%, 95%)',
+                sage: 'hsl(142, 43%, 76%)',
+                teal: 'hsl(170, 85%, 25%)',
+                navy: 'hsl(224, 29%, 31%)',
+                green: 'hsl(120, 93%, 42%)',
+            },
   			primary: {
   				'50': '#eff6ff',
   				'500': '#3b82f6',
@@ -60,6 +67,10 @@ module.exports = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		},
+        fontFamily: {
+            sans: ["var(--font-inter)"],
+            mono: ["var(--font-jetbrains-mono)"],
+        },
   		animation: {
   			'fade-in': 'fadeIn 0.5s ease-in-out',
   			'slide-up': 'slideUp 0.3s ease-out'

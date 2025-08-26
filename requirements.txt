@@ -1,31 +1,35 @@
-# Data Analysis and Feature Engineering Requirements
-# Compatible with the DataAnalysis.ipynb notebook
+# Deep Learning Framework
+#pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu129
 
-# Core data science libraries
-pandas>=1.3.0
-numpy>=1.20.0
-matplotlib>=3.4.0
-seaborn>=0.11.0
-wordcloud>=1.8.1
-scikit-learn>=1.0.0
-nltk>=3.6.0
-wordcloud>=1.8.1
-scikit-learn>=1.0.0
-nltk>=3.6.0
-torch>=1.10.0
-transformers>=4.0.0
+# Transformers and NLP
+transformers
+tokenizers
+accelerate
 
-# Machine learning and preprocessing
-scikit-learn>=1.0.0
 
-# Jupyter notebook support (optional, for running notebooks)
-jupyter>=1.0.0
-notebook>=6.0.0
+# Data Processing and Analysis
+pandas
+numpy
 
-# Additional useful libraries for data analysis
-missingno>=0.5.0  # For missing data visualization
-plotly>=5.0.0     # For interactive plots (optional)
+# Machine Learning
+scikit-learn
 
-# Development and utility
-ipython>=7.0.0    # Enhanced interactive Python
+# Data Visualization
+matplotlib
+seaborn
 
+# Jupyter and Interactive Computing
+ipykernel
+jupyter
+ipython
+
+# Experiment Tracking
+wandb
+
+# Utilities
+tqdm
+requests
+pillow
+
+# Text Processing
+wordcloud

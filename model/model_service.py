@@ -1,82 +1,108 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List
 import logging
-import time
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import os
 
-# Configure logging
+# --- Configuration ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
+# The path where the model is stored, relative to the Docker container's working directory
+MODEL_PATH = "./my_medical_model"
+
+# --- FastAPI App Initialization ---
 app = FastAPI(
     title="Medical Classification Model Service",
-    description="ML service for medical paper classification",
-    version="1.0.0"
+    description="ML service for medical paper classification using a fine-tuned PubMedBERT model.",
+    version="2.0.0"
 )
 
+# --- Model Loading ---
+model = None
+tokenizer = None
+
+@app.on_event("startup")
+def load_model():
+    """Load the tokenizer and model at application startup."""
+    global model, tokenizer
+    if not os.path.exists(MODEL_PATH):
+        logger.error(f"Model directory not found at: {MODEL_PATH}")
+        logger.error("Please ensure the trained model is placed in the 'model' directory.")
+        # In a real scenario, you might want to prevent the app from starting
+        return
+
+    try:
+        logger.info(f"Loading model from path: {MODEL_PATH}")
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+        model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+        model.eval()  # Set model to evaluation mode
+        logger.info("Model and tokenizer loaded successfully.")
+    except Exception as e:
+        logger.error(f"Fatal error during model loading: {e}")
+        # This is a critical error, so we might want to stop the service
+
+# --- Pydantic Models ---
 class ClassificationRequest(BaseModel):
     texts: List[str]
-    max_length: int = 512
+    max_length: int = 512  # Max length used during training
 
 class Prediction(BaseModel):
     category: str
-    confidence: float
+    probability: float
 
 class ClassificationResponse(BaseModel):
     predictions: List[List[Prediction]]
 
-# Mock categories (replace with actual model)
+# --- API Endpoints ---
 CATEGORIES = ['neurological', 'cardiovascular', 'hepatorenal', 'oncological']
-
-def mock_classify_text(text: str) -> List[Prediction]:
-    """Mock classification function - replace with actual model inference"""
-    import random
-    random.seed(hash(text) % 1000)  # Deterministic for testing
-
-    predictions = []
-    for category in CATEGORIES:
-        confidence = random.uniform(0.1, 0.9)
-        if confidence > 0.3:  # Only include predictions above threshold
-            predictions.append(Prediction(
-                category=category,
-                confidence=round(confidence, 3)
-            ))
-
-    # Sort by confidence and take top predictions
-    predictions.sort(key=lambda x: x.confidence, reverse=True)
-    return predictions[:2]  # Return top 2 predictions
 
 @app.post("/classify", response_model=ClassificationResponse)
 async def classify_texts(request: ClassificationRequest):
-    """Classify medical texts"""
+    """Classifies a batch of medical texts."""
+    if not model or not tokenizer:
+        raise HTTPException(
+            status_code=503, 
+            detail="Model is not loaded. Please check service logs for errors."
+        )
+
     try:
-        logger.info(f"Classifying {len(request.texts)} texts")
+        inputs = tokenizer(
+            request.texts,
+            return_tensors='pt',
+            truncation=True,
+            padding=True,
+            max_length=request.max_length
+        )
+
+        with torch.no_grad():
+            outputs = model(**inputs)
+            probabilities = torch.sigmoid(outputs.logits)
 
         all_predictions = []
-        for text in request.texts:
-            predictions = mock_classify_text(text)
-            all_predictions.append(predictions)
-
-            # Simulate processing time
-            time.sleep(0.1)
+        for i in range(len(request.texts)):
+            text_predictions = [
+                Prediction(category=category, probability=round(probabilities[i][j].item(), 4))
+                for j, category in enumerate(CATEGORIES)
+            ]
+            all_predictions.append(text_predictions)
 
         return ClassificationResponse(predictions=all_predictions)
 
     except Exception as e:
-        logger.error(f"Classification error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Classification failed")
+        logger.error(f"An error occurred during classification: {e}")
+        raise HTTPException(status_code=500, detail=f"Classification failed: {e}")
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "model": "mock_classifier"}
-
-@app.get("/categories")
-async def get_categories():
-    """Get available categories"""
-    return {"categories": CATEGORIES}
+    """Health check endpoint to verify service and model status."""
+    model_status = "loaded" if model and tokenizer else "not loaded"
+    return {"status": "healthy", "model_status": model_status}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    # This block is for local testing and is not used by Docker
+    # To test locally, you would need to have the model in ./my_medical_model
+    uvicorn.run("model_service:app", host="0.0.0.0", port=8080, reload=True)
