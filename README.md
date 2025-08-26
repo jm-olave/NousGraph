@@ -374,15 +374,21 @@ docker stats
 
 ## 🎥 Demo Video
 
-> **📹 Coming Soon!**
-> 
-> A comprehensive demo video showcasing the system in action will be added here, including:
-> - Step-by-step setup process
-> - Live CSV upload and classification
-> - Results interpretation and analysis
-> - Performance benchmarks and accuracy metrics
-> 
-> _Stay tuned for the complete walkthrough!_
+Watch the complete system demonstration showcasing the Medical Paper Classification System in action:
+
+[![Medical Paper Classification Demo](https://img.youtube.com/vi/Monf_OodB80/maxresdefault.jpg)](https://youtu.be/Monf_OodB80)
+
+**🎬 [View Demo Video](https://youtu.be/Monf_OodB80)**
+
+The demo includes:
+- **Step-by-step setup process** with Docker Compose
+- **Live CSV upload and classification** workflow
+- **Results interpretation and analysis** features
+- **Performance benchmarks** and accuracy metrics
+- **Real-time progress tracking** demonstration
+- **Single text classification** functionality
+
+_Duration: Complete walkthrough of the medical paper classification system from setup to results analysis._
 
 ## 📊 Performance Metrics
 
