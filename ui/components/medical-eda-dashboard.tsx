@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { ExternalLink, BookOpen } from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -112,8 +114,8 @@ export default function MedicalEDADashboard() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Medical Dataset - Exploratory Data Analysis</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold text-nous-navy mb-2">Medical Dataset - Exploratory Data Analysis</h1>
+        <p className="text-nous-teal">
           Interactive visualization of target variable distribution and class characteristics
         </p>
       </div>
@@ -127,10 +129,10 @@ export default function MedicalEDADashboard() {
 
         <TabsContent value="distribution" className="space-y-6">
           {/* Class Counts Bar Chart */}
-          <Card>
+          <Card className="border-nous-sage/20 bg-white/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Target Variable Distribution - Class Counts</CardTitle>
-              <CardDescription>Number of samples per medical category</CardDescription>
+              <CardTitle className="text-nous-navy">Target Variable Distribution - Class Counts</CardTitle>
+              <CardDescription className="text-nous-teal">Number of samples per medical category</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -153,10 +155,10 @@ export default function MedicalEDADashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Pie Chart */}
-            <Card>
+            <Card className="border-nous-sage/20 bg-white/60 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>Class Distribution (%)</CardTitle>
-                <CardDescription>Percentage breakdown of medical categories</CardDescription>
+                <CardTitle className="text-nous-navy">Class Distribution (%)</CardTitle>
+                <CardDescription className="text-nous-teal">Percentage breakdown of medical categories</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -182,10 +184,10 @@ export default function MedicalEDADashboard() {
             </Card>
 
             {/* Class Imbalance */}
-            <Card>
+            <Card className="border-nous-sage/20 bg-white/60 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>Class Imbalance Analysis</CardTitle>
-                <CardDescription>Ratio: 151.14:1 (Most vs Least Frequent)</CardDescription>
+                <CardTitle className="text-nous-navy">Class Imbalance Analysis</CardTitle>
+                <CardDescription className="text-nous-teal">Ratio: 151.14:1 (Most vs Least Frequent)</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -235,10 +237,10 @@ export default function MedicalEDADashboard() {
         </TabsContent>
 
         <TabsContent value="wordclouds" className="space-y-6">
-          <Card>
+          <Card className="border-nous-sage/20 bg-white/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Word Analysis by Medical Category</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-nous-navy">Word Analysis by Medical Category</CardTitle>
+              <CardDescription className="text-nous-teal">
                 Key terms and concepts associated with each medical category
               </CardDescription>
             </CardHeader>
@@ -276,9 +278,9 @@ export default function MedicalEDADashboard() {
 
         <TabsContent value="insights" className="space-y-6">
           <div className="grid gap-6">
-            <Card>
+            <Card className="border-nous-sage/20 bg-white/60 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>Key Findings</CardTitle>
+                <CardTitle className="text-nous-navy">Key Findings</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
@@ -318,9 +320,9 @@ export default function MedicalEDADashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-nous-sage/20 bg-white/60 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>Recommendations</CardTitle>
+                <CardTitle className="text-nous-navy">Recommendations</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm">
@@ -334,6 +336,48 @@ export default function MedicalEDADashboard() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Model Training Information Section */}
+      <Card className="border-nous-sage/20 bg-gradient-to-r from-nous-green/5 to-nous-teal/5 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-nous-navy flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            Model Training Details
+          </CardTitle>
+          <CardDescription className="text-nous-teal">
+            Learn more about how we trained our medical paper classification model
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <p className="text-nous-navy font-medium">
+                Want to dive deeper into our model architecture and training process?
+              </p>
+              <p className="text-sm text-nous-teal">
+                Explore our comprehensive training report including hyperparameters,
+                performance metrics, and model evaluation details.
+              </p>
+            </div>
+            <div className="ml-4 flex-shrink-0">
+              <Button
+                asChild
+                className="bg-nous-green hover:bg-nous-teal text-white transition-colors"
+              >
+                <a
+                  href="https://wandb.ai/dzience-nousgraph/huggingface/reports/NousGraph-Medical-Analytics--VmlldzoxNDEzMDAzMg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  View Training Report
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,12 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Logo } from '@/components/ui/logo';
+import { Navigation } from '@/components/navigation';
 import { FileUpload } from '@/components/dashboard/file-upload';
 import { ProgressTracker } from '@/components/dashboard/progress-tracker';
 import { ResultsPanel } from '@/components/dashboard/results-panel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 export default function Dashboard() {
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle');
@@ -26,22 +25,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-nous-cream to-white">
-      {/* Header */}
-      <header className="border-b border-nous-sage/20 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Logo size="md" />
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className="bg-nous-green/10 text-nous-teal border-nous-sage">
-                Beta v1.0
-              </Badge>
-              <div className="text-sm text-nous-navy">
-                <span className="font-semibold">Judge Portal</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
